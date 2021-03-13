@@ -1,3 +1,4 @@
+import fire
 import urllib
 import os
 import requests
@@ -11,43 +12,38 @@ from urllib.parse import urljoin
 
 API_LINK = urljoin("https://api.unsplash.com",
                    "photos/random/?client_id=gkuFSia_Rch2GYRK67s8gIfvzRaM73nbnIuYij986Nw")
+storage_path = Path.home() \
+                   / 'AppData' / 'Roaming' / 'JetBrains' / 'PyCharmCE2020.1' / 'scratches' / 'Images4Desktop'
+leave = 0
 
 logging.basicConfig(level=logging.INFO)
 
 logging.info("Hello ! Welcome to my background changer.")
 sleep(0.5)
 
-num_of_changes = "a"
-while type(num_of_changes) != int:
-    try:
-        num_of_changes = int(input("How many backgrounds would you like me to fetch?"))
-    except ValueError:
-        logging.error("Please enter a integer input only")
 
+def desktop_changer(changes_num: int = 5):
 
-def desktop_changer():
-    photos_queue = Queue(maxsize=num_of_changes)
+    global leave
+    photos_queue = Queue(maxsize=changes_num)
     logging.basicConfig(level=logging.INFO)
 
-    logging.info("I will now go fetch " + str(num_of_changes)
-                 + " random pictures then set them as your background")
-
-    leave = 0
-    storage_path = Path.home() \
-                   / 'AppData' / 'Roaming' / 'JetBrains' / 'PyCharmCE2020.1' / 'scratches' / 'Images4Desktop'
+    logging.info("I will now go fetch %s random pictures then set them as your background", changes_num)
 
     while leave != "Yes":
 
-        for j in range(num_of_changes):
+        for j in range(changes_num):
             jason_data = requests.get(API_LINK).json()
             urllib.request.urlretrieve(
                 jason_data['urls']['full'], "BackGround")
             background = Image.open("Background")
-            background.save(storage_path.joinpath(f'CBG{j}.jpg'))
             random_photo = storage_path.joinpath(f'CBG{j}.jpg')
+            background.save(random_photo)
             photos_queue.put_nowait(random_photo)
-            logging.info(f"Loading background number {photos_queue.qsize()}"
-                         f" when i reach {num_of_changes} the magic will begin!")
+            logging.info(f"Loading background number %s"
+                         f" when i reach %s the magic will begin!",
+                         photos_queue.qsize(), changes_num)
+
         sleep(0.5)
         logging.info("Starting the Desktop change")
         sleep(1)
@@ -55,13 +51,14 @@ def desktop_changer():
         if photos_queue.full():
 
             while not photos_queue.empty():
-                logging.info(f"Current BG is number {photos_queue.qsize()} in line")
+                logging.info("Current BG is number %s in line",
+                             photos_queue.qsize())
                 ctypes.windll.user32.SystemParametersInfoW(
                     20, 0, str(photos_queue.get_nowait()), 0)
                 sleep(2)
 
         logging.info("That's all for now , i shall now delete the backgrounds from your memory")
-        for n in range(num_of_changes):
+        for n in range(changes_num):
             os.remove(storage_path.joinpath(f"CBG{n}.jpg"))
 
         leave = input("Would you like to quit ? Type Yes if so , Enter anything else if you wanna go again!")
@@ -71,4 +68,4 @@ def desktop_changer():
 
 
 if __name__ == "__main__":
-    desktop_changer()
+    fire.Fire(desktop_changer)
