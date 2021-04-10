@@ -18,9 +18,6 @@ leave = 0
 
 logging.basicConfig(level=logging.INFO)
 
-logging.info("Hello ! Welcome to my background changer.")
-sleep(0.5)
-
 
 def desktop_changer(changes_num: int = 5):
 
@@ -62,10 +59,13 @@ def desktop_changer(changes_num: int = 5):
             os.remove(storage_path.joinpath(f"CBG{n}.jpg"))
 
         leave = input("Would you like to quit ? Type Yes if so , Enter anything else if you wanna go again!")
+
     else:
         logging.info("Thanks for using me!")
         sleep(2)
 
 
 if __name__ == "__main__":
+    logging.info("Hello ! Welcome to my background changer.")
+
     fire.Fire(desktop_changer)
